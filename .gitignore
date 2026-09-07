@@ -1,0 +1,18 @@
+# Environment Variables
+.env
+.env.local
+
+# Python Cache & Artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Chroma Vector Store Cache
+chroma_db/
+*.parquet
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
