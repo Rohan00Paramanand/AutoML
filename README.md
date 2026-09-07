@@ -1,60 +1,62 @@
-# Transparent AutoML & RAG-Assisted Data Tool 🔍🤖
+# Transparent AutoML Studio & RAG Assistant ⚡🤖
 
-A glass-box Automated Machine Learning (AutoML) web application built with **Streamlit**, **Scikit-Learn**, **LangChain**, **ChromaDB**, and **Google Gemini API** / **Ollama**.
-
-Unlike black-box AutoML systems, this tool explicitly logs every heuristic decision (data cleaning, missing value imputations, categorical encodings, model benchmarks, and feature importance). It then indexes this execution chronicle into a local RAG vector store, allowing users to chat directly with an AI assistant that explains every step of the pipeline with concrete numbers and 100% factual grounding.
+A next-generation, glass-box Automated Machine Learning (AutoML) platform with a modern, sleek **React + Vite** frontend, **FastAPI** backend, and **Streamlit** client support. Powered by **Scikit-Learn**, **LangChain**, **ChromaDB**, and **Google Gemini API** / **Local Ollama**.
 
 ---
 
-## 🚀 Quickstart Guide
+## 🌟 Key Highlights
 
-### 1. Install Dependencies
+- 🎨 **Modern Minimalist UI**: Built with React 18, TailwindCSS, Motion.dev (Framer Motion) micro-animations, React Bits / KokonutUI glassmorphism design, and Blockit-style data visualizations with Recharts.
+- 📱 **100% Mobile Responsive**: Fluid layouts, responsive metric grids, touch-friendly targets, and mobile navigation.
+- 🔍 **100% Glass-Box Observability**: Explicitly logs every heuristic decision (data cleaning, identifier pruning, missing value imputation, categorical encoding, multi-estimator benchmarks, and feature importance rankings).
+- 💬 **Explainable AI Assistant**: Indexes the complete execution chronicle into ChromaDB for instant, citation-grounded RAG explanations with real-time token streaming.
+- ⚡ **Multi-Provider AI**: Instant ~1s responses with Google Gemini (`gemini-3.6-flash`, `gemini-3.7-flash`) or 100% local/offline execution with Ollama (`qwen2.5:7b`, `llama3.2:3b`).
+
+---
+
+## 🚀 Running the Application
+
+### 1. Install Backend Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Choose Your AI Provider
-
-#### Option A: Google Gemini (Recommended for Instant Speed & Cloud Deployment)
-1. Get a free API key at [Google AI Studio](https://aistudio.google.com/app/apikey).
-2. Set it as an environment variable or enter it in the app sidebar:
-   ```bash
-   set GOOGLE_API_KEY="your-api-key-here"
-   ```
-   *Responses stream in ~1-2 seconds with zero local CPU load!*
-
-#### Option B: Local Ollama (100% Offline Mode)
-1. Ensure Ollama is running (`ollama serve`).
-2. Pull your preferred model (e.g., `ollama pull qwen2.5:7b` or lightweight `ollama pull llama3.2:3b`).
-
----
-
-### 3. Launch the Streamlit App
+### 2. Launch the FastAPI Backend
 ```bash
-streamlit run app.py
+python server.py
 ```
+*API runs at `http://localhost:8000` (interactive documentation at `http://localhost:8000/docs`).*
+
+### 3. Launch the React Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+*Frontend runs at `http://localhost:5173` with instant hot-reloading and proxying to the backend.*
 
 ---
 
-## 📁 Project Structure
+## 📁 Repository Architecture
 
 ```
-├── requirements.txt         # Project dependencies (Streamlit, Scikit-Learn, LangChain, ChromaDB, Gemini, Ollama)
+├── server.py               # FastAPI backend with REST & SSE endpoints
 ├── automl_engine.py         # Transparent AutoML engine with 8-step chronological audit trail
 ├── rag_chat.py              # Multi-provider RAG engine (Gemini & Ollama with streaming)
-├── app.py                   # Streamlit 3-tab user interface with AI provider selection
-└── README.md                # Project documentation
+├── app.py                   # Streamlit interface
+├── test_server_api.py       # Integration tests for FastAPI endpoints
+├── test_pipeline.py         # Unit tests for AutoML engine and RAG pipeline
+├── requirements.txt         # Python dependencies
+└── frontend/                # React 18 + Vite + Tailwind + Motion.dev frontend
+    ├── src/
+    │   ├── components/
+    │   │   ├── Header.jsx         # Sleek nav bar with AI provider switcher & tabs
+    │   │   ├── MetricCard.jsx     # Spotlight glassmorphism metric cards
+    │   │   ├── DataSetupTab.jsx   # Ingestion, profiling, schema viewer & heuristics
+    │   │   ├── ResultsTab.jsx     # Recharts leaderboards, feature rankings & log
+    │   │   └── ChatTab.jsx        # KokonutUI-inspired RAG assistant with streaming
+    │   ├── App.jsx                # Main application state & API coordinator
+    │   └── index.css              # Custom design system & animations
+    ├── vite.config.js
+    └── tailwind.config.js
 ```
-
----
-
-## 🌐 Deploying to Streamlit Cloud / HuggingFace Spaces
-
-When deploying to Streamlit Community Cloud:
-1. Push this repository to GitHub.
-2. Connect the repository to [share.streamlit.io](https://share.streamlit.io).
-3. Under **App Settings > Secrets**, add your Gemini API key:
-   ```toml
-   GOOGLE_API_KEY = "your-api-key-here"
-   ```
-4. Click **Deploy**. The app will run smoothly on free cloud hosting with no GPU or memory bottlenecks.

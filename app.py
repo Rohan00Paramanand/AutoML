@@ -24,93 +24,402 @@ from rag_chat import AutoMLRAGAssistant, check_ollama_status
 
 
 # ==============================================================================
-# 1. Page Configuration & Custom CSS
+# 1. Page Configuration & Custom Modern Minimalist CSS
 # ==============================================================================
 st.set_page_config(
-    page_title="Transparent AutoML & RAG Assistant",
-    page_icon="🔍",
+    page_title="Transparent AutoML & AI Assistant",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 CUSTOM_CSS = """
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
     
+    /* ---------------- Global Reset & Typography ---------------- */
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .metric-card {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8));
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
-        padding: 18px 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-        backdrop-filter: blur(8px);
-        margin-bottom: 12px;
-    }
-    .metric-title {
-        color: #94a3b8;
-        font-size: 0.82rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    .metric-value {
-        color: #f8fafc;
-        font-size: 1.6rem;
-        font-weight: 700;
-        margin-top: 4px;
-    }
-    .metric-sub {
-        color: #38bdf8;
-        font-size: 0.78rem;
-        margin-top: 2px;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #f1f5f9;
+        -webkit-font-smoothing: antialiased;
     }
 
-    .hero-banner {
-        background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #172554 100%);
-        border: 1px solid rgba(99, 102, 241, 0.3);
-        border-radius: 16px;
-        padding: 24px;
-        margin-bottom: 24px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    /* Container Spacing */
+    .block-container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 3rem !important;
+        padding-left: 1.8rem !important;
+        padding-right: 1.8rem !important;
+        max-width: 1400px;
     }
+
+    /* ---------------- Modern Minimalist Hero Banner ---------------- */
+    .hero-container {
+        position: relative;
+        background: linear-gradient(135deg, rgba(19, 27, 46, 0.9) 0%, rgba(10, 14, 26, 0.95) 100%);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 16px;
+        padding: 28px 32px;
+        margin-bottom: 24px;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(12px);
+        overflow: hidden;
+    }
+    
+    .hero-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #6366f1, #38bdf8, #a855f7, #6366f1);
+        background-size: 200% auto;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(99, 102, 241, 0.12);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        color: #a5b4fc;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        margin-bottom: 12px;
+    }
+
     .hero-title {
-        font-size: 1.8rem;
-        font-weight: 700;
-        background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: linear-gradient(135deg, #ffffff 30%, #cbd5e1 70%, #93c5fd 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin: 0;
+        line-height: 1.25;
     }
+
     .hero-subtitle {
         color: #94a3b8;
         font-size: 0.95rem;
-        margin-top: 6px;
-        line-height: 1.5;
+        line-height: 1.6;
+        margin-top: 8px;
+        margin-bottom: 0;
+        max-width: 900px;
     }
 
-    .log-box {
-        background-color: #0b0f19;
-        border: 1px solid #1e293b;
-        border-radius: 10px;
-        padding: 16px;
-        font-family: 'Consolas', 'Courier New', monospace;
-        font-size: 0.85rem;
-        color: #e2e8f0;
-        line-height: 1.5;
-        white-space: pre-wrap;
-        max-height: 500px;
-        overflow-y: auto;
+    /* ---------------- Sleek Minimalist Metric Cards ---------------- */
+    .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+        margin-bottom: 20px;
     }
 
-    .quick-chip-header {
-        font-size: 0.85rem;
+    .metric-card {
+        background: rgba(19, 27, 46, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 18px 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(8px);
+        transition: all 0.2s ease-in-out;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .metric-card:hover {
+        border-color: rgba(99, 102, 241, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+    }
+
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, #6366f1, #38bdf8);
+        opacity: 0.6;
+    }
+
+    .metric-title {
+        color: #94a3b8;
+        font-size: 0.76rem;
         font-weight: 600;
-        color: #cbd5e1;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .metric-value {
+        color: #f8fafc;
+        font-size: 1.65rem;
+        font-weight: 700;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        margin-top: 6px;
+        letter-spacing: -0.01em;
+    }
+
+    .metric-sub {
+        color: #38bdf8;
+        font-size: 0.78rem;
+        font-weight: 500;
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* ---------------- Status & Info Pills ---------------- */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .status-badge-active {
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: #34d399;
+    }
+
+    .pulse-dot {
+        width: 7px;
+        height: 7px;
+        background-color: #10b981;
+        border-radius: 50%;
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        }
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+        }
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        }
+    }
+
+    /* ---------------- Streamlit Tabs Modernization ---------------- */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: rgba(15, 23, 42, 0.6);
+        padding: 6px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        margin-bottom: 24px;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        height: 42px;
+        border-radius: 8px;
+        padding: 0 18px;
+        color: #94a3b8;
+        font-weight: 600;
+        font-size: 0.88rem;
+        border: none !important;
+        background: transparent;
+        transition: all 0.2s ease;
+    }
+
+    .stTabs [data-baseweb="tab"]:hover {
+        color: #f8fafc;
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+    }
+
+    /* ---------------- Modern Glass Cards & Onboarding ---------------- */
+    .glass-card {
+        background: rgba(19, 27, 46, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(10px);
+        margin-bottom: 20px;
+    }
+
+    .onboarding-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6));
+        border: 1px dashed rgba(99, 102, 241, 0.4);
+        border-radius: 16px;
+        padding: 36px 24px;
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .onboarding-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #f1f5f9;
         margin-bottom: 8px;
+    }
+
+    .onboarding-text {
+        font-size: 0.9rem;
+        color: #94a3b8;
+        max-width: 540px;
+        margin: 0 auto 20px auto;
+        line-height: 1.5;
+    }
+
+    /* ---------------- Terminal Execution Log Box ---------------- */
+    .log-box {
+        background-color: #060911;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 18px 20px;
+        font-family: 'JetBrains Mono', 'Consolas', monospace;
+        font-size: 0.82rem;
+        color: #e2e8f0;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        max-height: 480px;
+        overflow-y: auto;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Custom slim scrollbar */
+    .log-box::-webkit-scrollbar, ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    .log-box::-webkit-scrollbar-track, ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+    }
+    .log-box::-webkit-scrollbar-thumb, ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+    }
+    .log-box::-webkit-scrollbar-thumb:hover, ::-webkit-scrollbar-thumb:hover {
+        background: rgba(99, 102, 241, 0.5);
+    }
+
+    /* ---------------- Chat Experience Modernization ---------------- */
+    .quick-chip-header {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 10px;
+    }
+
+    /* Streamlit Button Tweaks */
+    div.stButton > button {
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        transition: all 0.2s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    div.stButton > button:hover {
+        border-color: rgba(99, 102, 241, 0.5);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Primary button sleek gradient */
+    div.stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+        border: none !important;
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4) !important;
+    }
+
+    div.stButton > button[kind="primary"]:hover {
+        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6) !important;
+        transform: translateY(-1px);
+    }
+
+    /* ---------------- Mobile Responsive Media Queries ---------------- */
+    @media (max-width: 768px) {
+        .block-container {
+            padding-top: 1rem !important;
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+            padding-bottom: 2rem !important;
+        }
+
+        .hero-container {
+            padding: 20px 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .hero-title {
+            font-size: 1.45rem;
+        }
+
+        .hero-subtitle {
+            font-size: 0.85rem;
+            line-height: 1.45;
+        }
+
+        .metric-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .metric-card {
+            padding: 14px 12px;
+        }
+
+        .metric-value {
+            font-size: 1.35rem;
+        }
+
+        .metric-title {
+            font-size: 0.7rem;
+        }
+
+        .stTabs [data-baseweb="tab"] {
+            padding: 0 12px;
+            font-size: 0.8rem;
+            height: 38px;
+        }
+
+        .log-box {
+            font-size: 0.75rem;
+            padding: 12px;
+            max-height: 350px;
+        }
+
+        .glass-card {
+            padding: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .metric-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 """
@@ -191,25 +500,36 @@ def create_sample_dataset() -> pd.DataFrame:
 # 4. Sidebar Controls & AI Provider Selection
 # ==============================================================================
 with st.sidebar:
-    st.image("https://img.icons8.com/isometric/100/artificial-intelligence.png", width=60)
-    st.title("AutoML Controls")
-    st.caption("Transparent Heuristics & Explainable RAG")
+    st.markdown(
+        """
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <div style="background: linear-gradient(135deg, #6366f1, #38bdf8); padding: 8px; border-radius: 10px; display: flex;">
+                <span style="font-size: 1.3rem;">⚡</span>
+            </div>
+            <div>
+                <div style="font-weight: 700; font-size: 1.15rem; color: #ffffff; letter-spacing: -0.01em;">AutoML Studio</div>
+                <div style="font-size: 0.75rem; color: #94a3b8;">Transparent & Explainable</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown("---")
-    st.subheader("🤖 AI Backend Provider")
+    st.markdown("#### 🤖 AI Backend Engine")
 
     provider_choice = st.radio(
-        "Choose AI Engine:",
-        options=["⚡ Google Gemini (Fast & Deployable)", "🦙 Local Ollama (Offline)"],
+        "AI Provider:",
+        options=["⚡ Google Gemini (Cloud / Fast)", "🦙 Local Ollama (Offline)"],
         index=0,
-        help="Google Gemini responds in ~1-2 seconds and is ready for cloud deployment. Ollama runs 100% locally on your machine.",
+        label_visibility="collapsed",
+        help="Google Gemini responds in ~1-2s and is ready for cloud deployment. Ollama runs 100% locally on your machine.",
     )
 
     is_gemini = "Gemini" in provider_choice
     selected_provider = "gemini" if is_gemini else "ollama"
 
     if is_gemini:
-        # Default to environment variable (.env) or streamlit secrets if present
         env_key = os.getenv("GOOGLE_API_KEY", "")
         try:
             if not env_key and hasattr(st, "secrets") and "GOOGLE_API_KEY" in st.secrets:
@@ -225,12 +545,12 @@ with st.sidebar:
             help="Loaded automatically from .env or entered here.",
         )
         gemini_model = st.selectbox(
-            "Gemini Model",
+            "Model Version",
             options=["gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.5-flash", "gemini-3-flash-preview"],
             index=0,
             help="gemini-3.6-flash provides blazing fast (1-2s) responses with exceptional reasoning quality.",
         )
-        st.markdown("[🔑 Get Free Gemini API Key](https://aistudio.google.com/app/apikey)")
+        st.markdown("[🔑 Get Free Gemini Key](https://aistudio.google.com/app/apikey)")
         ollama_url = "http://localhost:11434"
         ollama_model = "qwen2.5:7b"
     else:
@@ -251,17 +571,17 @@ with st.sidebar:
         if st.session_state["ollama_status"]:
             stat = st.session_state["ollama_status"]
             if stat["connected"] and stat["has_target_model"]:
-                st.success(f" Connected to Ollama (`{ollama_model}` ready)")
+                st.success(f" Connected (`{ollama_model}` ready)")
             elif stat["connected"]:
-                st.warning(f"⚠️ Connected, but model `{ollama_model}` was not found.\nRun: `ollama pull {ollama_model}`")
+                st.warning(f"⚠️ Connected, but model `{ollama_model}` missing.\nRun: `ollama pull {ollama_model}`")
             else:
-                st.error(f"❌ Cannot reach Ollama at {ollama_url}.\nEnsure Ollama is running.")
+                st.error(f"❌ Cannot reach Ollama at {ollama_url}.")
 
     st.markdown("---")
-    st.subheader("⚙️ Pipeline Heuristics")
+    st.markdown("#### ⚙️ Pipeline Heuristics")
 
     missing_thresh = st.slider(
-        "Missing Value Drop Threshold (%)",
+        "Missing Drop Threshold (%)",
         min_value=20,
         max_value=90,
         value=60,
@@ -286,7 +606,7 @@ with st.sidebar:
     ) / 100.0
 
     st.markdown("---")
-    st.caption("Built with Streamlit • Scikit-Learn • LangChain • ChromaDB • Gemini & Ollama")
+    st.caption("✨ Built with Streamlit • Scikit-Learn • ChromaDB • LangChain")
 
 
 # ==============================================================================
@@ -294,11 +614,13 @@ with st.sidebar:
 # ==============================================================================
 st.markdown(
     """
-    <div class="hero-banner">
-        <h1 class="hero-title">Transparent AutoML & RAG-Assisted Data Tool</h1>
+    <div class="hero-container">
+        <div class="hero-badge">
+            <span>✨</span> Transparent AutoML & Explainable RAG
+        </div>
+        <h1 class="hero-title">Automate Machine Learning with Glass-Box Clarity</h1>
         <p class="hero-subtitle">
-            Automate machine learning pipeline creation with full glass-box observability. Every heuristic,
-            column pruning, missing-value imputation, and model benchmark is explicitly logged and indexed into a local RAG vector store for instant, explainable AI chat.
+            End-to-end data profiling, heuristic cleaning, multi-estimator benchmarking, and retrieval-augmented AI explanations with zero black-box obscurity.
         </p>
     </div>
     """,
@@ -320,22 +642,20 @@ tab_setup, tab_results, tab_chat = st.tabs([
 # TAB 1: DATA & SETUP
 # ==============================================================================
 with tab_setup:
-    st.subheader("1. Ingest Dataset")
-
     col_upload, col_sample = st.columns([3, 1])
 
     with col_upload:
-        uploaded_file = st.file_uploader("Upload a CSV file for Machine Learning", type=["csv"])
+        uploaded_file = st.file_uploader("Upload CSV Dataset", type=["csv"], help="Upload your structured tabular CSV file.")
         if uploaded_file is not None:
             try:
                 st.session_state["df"] = pd.read_csv(uploaded_file)
-                st.success(f"Successfully loaded '{uploaded_file.name}' with {len(st.session_state['df']):,} rows.")
+                st.toast(f"Loaded '{uploaded_file.name}' ({len(st.session_state['df']):,} rows)", icon="📊")
             except Exception as e:
                 st.error(f"Error reading CSV: {e}")
 
     with col_sample:
         st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-        if st.button("✨ Load Sample Dataset", use_container_width=True, help="Load synthetic Titanic-style dataset with missing values and categories."):
+        if st.button("✨ Load Sample Data", use_container_width=True, help="Load synthetic Titanic-style dataset with missing values, categories, and numerical features."):
             st.session_state["df"] = create_sample_dataset()
             st.toast("Loaded synthetic sample dataset!", icon="🚀")
 
@@ -343,67 +663,46 @@ with tab_setup:
         df = st.session_state["df"]
 
         st.markdown("---")
-        st.subheader("2. Dataset Profiling")
+        st.markdown("### 📊 Dataset Profiling Overview")
 
-        m1, m2, m3, m4, m5 = st.columns(5)
-        with m1:
-            st.markdown(
-                f"""
+        # Responsive Metric Grid
+        null_count = int(df.isnull().sum().sum())
+        null_pct = (null_count / (df.size or 1)) * 100
+        dup_count = int(df.duplicated().sum())
+        mem_kb = df.memory_usage(deep=True).sum() / 1024
+
+        st.markdown(
+            f"""
+            <div class="metric-grid">
                 <div class="metric-card">
                     <div class="metric-title">Total Rows</div>
                     <div class="metric-value">{len(df):,}</div>
-                    <div class="metric-sub">Samples</div>
+                    <div class="metric-sub">✓ {len(df)} samples</div>
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with m2:
-            st.markdown(
-                f"""
                 <div class="metric-card">
-                    <div class="metric-title">Total Columns</div>
+                    <div class="metric-title">Columns</div>
                     <div class="metric-value">{df.shape[1]}</div>
                     <div class="metric-sub">Features + Target</div>
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with m3:
-            null_count = df.isnull().sum().sum()
-            st.markdown(
-                f"""
                 <div class="metric-card">
                     <div class="metric-title">Missing Cells</div>
                     <div class="metric-value">{null_count:,}</div>
-                    <div class="metric-sub">{((null_count / (df.size or 1)) * 100):.1f}% of data</div>
+                    <div class="metric-sub">{null_pct:.1f}% missing</div>
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with m4:
-            dup_count = df.duplicated().sum()
-            st.markdown(
-                f"""
                 <div class="metric-card">
                     <div class="metric-title">Duplicate Rows</div>
                     <div class="metric-value">{dup_count:,}</div>
-                    <div class="metric-sub">Exact matches</div>
+                    <div class="metric-sub">Exact duplicates</div>
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with m5:
-            mem_kb = df.memory_usage(deep=True).sum() / 1024
-            st.markdown(
-                f"""
                 <div class="metric-card">
-                    <div class="metric-title">Memory</div>
-                    <div class="metric-value">{mem_kb:.1f} KB</div>
-                    <div class="metric-sub">In-memory footprint</div>
+                    <div class="metric-title">Memory Footprint</div>
+                    <div class="metric-value">{mem_kb:.1f} <span style="font-size: 1rem; font-weight: 500;">KB</span></div>
+                    <div class="metric-sub">In-memory size</div>
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
         with st.expander("🔍 View Raw Data Preview & Column Schemas", expanded=True):
             tab_preview, tab_schema = st.tabs(["Data Table", "Column Statistics"])
@@ -420,7 +719,7 @@ with tab_setup:
                 st.dataframe(schema_df, use_container_width=True)
 
         st.markdown("---")
-        st.subheader("3. Select Target Variable & Execute AutoML")
+        st.markdown("### 🎯 Target Selection & Pipeline Execution")
 
         col_target, col_btn = st.columns([2, 1])
         with col_target:
@@ -428,6 +727,7 @@ with tab_setup:
                 "Choose the Target Column to Predict:",
                 options=list(df.columns),
                 index=len(df.columns) - 1,
+                help="Select the column you want the machine learning model to predict.",
             )
 
         with col_btn:
@@ -469,7 +769,18 @@ with tab_setup:
                 except Exception as e:
                     st.error(f"AutoML Pipeline Execution Failed: {str(e)}")
     else:
-        st.info("👆 Please upload a CSV file or click **'Load Sample Dataset'** above to begin.")
+        st.markdown(
+            """
+            <div class="onboarding-card">
+                <div style="font-size: 2.2rem; margin-bottom: 12px;">📁</div>
+                <div class="onboarding-title">No Dataset Loaded</div>
+                <div class="onboarding-text">
+                    Upload a custom CSV file above or click <strong>"Load Sample Data"</strong> to experiment with a ready-to-use tabular dataset.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 # ==============================================================================
@@ -477,77 +788,72 @@ with tab_setup:
 # ==============================================================================
 with tab_results:
     if st.session_state["automl_engine"] is None:
-        st.info("No AutoML run found. Please configure and run AutoML in **Tab 1: Data & Setup**.")
+        st.markdown(
+            """
+            <div class="onboarding-card">
+                <div style="font-size: 2.2rem; margin-bottom: 12px;">⚡</div>
+                <div class="onboarding-title">No AutoML Run Available</div>
+                <div class="onboarding-text">
+                    Configure your dataset and run the AutoML engine in <strong>Tab 1: Data & Setup</strong> to view performance leaderboards and feature importance.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
     else:
         engine: TransparentAutoML = st.session_state["automl_engine"]
         metrics = engine.get_metrics()
         leaderboard = engine.get_leaderboard()
         feature_imp = engine.get_feature_importances()
 
-        st.subheader("🏆 Winning Model Overview")
-        r1, r2, r3, r4 = st.columns(4)
-        with r1:
-            st.markdown(
-                f"""
+        st.markdown("### 🏆 Winning Model Overview")
+
+        primary_score = metrics.get("Accuracy", metrics.get("R2_Score", 0.0))
+        metric_label = "Holdout Accuracy" if engine.task_type == "classification" else "Holdout R² Score"
+        secondary_score = metrics.get("F1_Score", metrics.get("RMSE", 0.0))
+        sec_label = "F1-Score (Macro)" if engine.task_type == "classification" else "RMSE"
+
+        st.markdown(
+            f"""
+            <div class="metric-grid">
                 <div class="metric-card">
-                    <div class="metric-title">Best Model</div>
-                    <div class="metric-value" style="font-size: 1.3rem; color: #38bdf8;">{engine.best_model_name}</div>
-                    <div class="metric-sub">Top performer</div>
+                    <div class="metric-title">Winning Estimator</div>
+                    <div class="metric-value" style="font-size: 1.35rem; color: #38bdf8;">{engine.best_model_name}</div>
+                    <div class="metric-sub">★ Top performer</div>
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with r2:
-            st.markdown(
-                f"""
                 <div class="metric-card">
                     <div class="metric-title">Task Formulation</div>
                     <div class="metric-value">{engine.task_type.capitalize()}</div>
                     <div class="metric-sub">Target: {engine.target_col}</div>
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with r3:
-            primary_score = metrics.get("Accuracy", metrics.get("R2_Score", 0.0))
-            metric_label = "Holdout Accuracy" if engine.task_type == "classification" else "Holdout R² Score"
-            st.markdown(
-                f"""
                 <div class="metric-card">
                     <div class="metric-title">{metric_label}</div>
                     <div class="metric-value">{primary_score:.4f}</div>
                     <div class="metric-sub">Test set evaluation</div>
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with r4:
-            secondary_score = metrics.get("F1_Score", metrics.get("RMSE", 0.0))
-            sec_label = "F1-Score (Macro)" if engine.task_type == "classification" else "RMSE"
-            st.markdown(
-                f"""
                 <div class="metric-card">
                     <div class="metric-title">{sec_label}</div>
                     <div class="metric-value">{secondary_score:.4f}</div>
                     <div class="metric-sub">Validation metric</div>
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
         st.markdown("---")
 
         col_lead, col_imp = st.columns([1, 1])
 
         with col_lead:
-            st.subheader("📊 Candidate Model Benchmarks")
+            st.markdown("#### 📊 Candidate Model Benchmarks")
             st.dataframe(leaderboard, use_container_width=True)
             if not leaderboard.empty:
                 chart_metric = "Accuracy" if engine.task_type == "classification" else "R2_Score"
                 st.bar_chart(data=leaderboard.set_index("Model")[[chart_metric]])
 
         with col_imp:
-            st.subheader("⭐ Feature Importance Ranking")
+            st.markdown("#### ⭐ Feature Importance Ranking")
             if not feature_imp.empty:
                 st.dataframe(feature_imp.head(10), use_container_width=True)
                 chart_data = feature_imp.head(10).set_index("Feature")["Importance_Percentage"]
@@ -557,7 +863,7 @@ with tab_results:
 
         st.markdown("---")
 
-        st.subheader("📜 Transparent Pipeline Execution Chronicle")
+        st.markdown("### 📜 Transparent Pipeline Execution Chronicle")
         st.caption("This exhaustive audit trail captures all decisions, heuristics, and benchmarks, and forms the knowledge base for the AI Assistant.")
 
         log_text = engine.get_execution_log()
@@ -573,7 +879,7 @@ with tab_results:
 
         st.markdown("---")
 
-        st.subheader("🔮 Run Predictions on New CSV")
+        st.markdown("### 🔮 Run Predictions on New CSV")
         pred_upload = st.file_uploader("Upload Holdout or New CSV for Prediction", type=["csv"], key="pred_uploader")
         if pred_upload is not None:
             try:
@@ -592,6 +898,7 @@ with tab_results:
                     data=csv_buffer.getvalue(),
                     file_name="predictions_output.csv",
                     mime="text/csv",
+                    use_container_width=True,
                 )
             except Exception as pe:
                 st.error(f"Prediction error: {pe}")
@@ -601,12 +908,39 @@ with tab_results:
 # TAB 3: AI ASSISTANT (RAG CHAT)
 # ==============================================================================
 with tab_chat:
-    st.subheader("💬 AI AutoML Explainability Assistant")
     active_provider_name = f"Google Gemini ({gemini_model})" if is_gemini else f"Ollama ({ollama_model})"
-    st.caption(f"Powered by **{active_provider_name}** with real-time streaming citations.")
+
+    st.markdown(
+        f"""
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+            <div>
+                <h3 style="margin: 0; font-size: 1.3rem; font-weight: 700;">💬 AI Pipeline Explainability Assistant</h3>
+                <p style="margin: 4px 0 0 0; font-size: 0.88rem; color: #94a3b8;">
+                    Ask questions grounded directly in the transparent execution chronicle.
+                </p>
+            </div>
+            <div class="status-badge status-badge-active">
+                <span class="pulse-dot"></span>
+                <span>{active_provider_name}</span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     if st.session_state["automl_engine"] is None or not st.session_state.get("execution_log"):
-        st.info("⚠️ Please run AutoML in **Tab 1: Data & Setup** first to generate the pipeline execution log.")
+        st.markdown(
+            """
+            <div class="onboarding-card">
+                <div style="font-size: 2.2rem; margin-bottom: 12px;">💬</div>
+                <div class="onboarding-title">AI Assistant Ready for Pipeline</div>
+                <div class="onboarding-text">
+                    Run the AutoML pipeline in <strong>Tab 1: Data & Setup</strong> to index the execution log into the ChromaDB vector database for RAG chat.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
     else:
         # Check provider configuration
         provider_ready = True
@@ -643,7 +977,7 @@ with tab_chat:
         st.markdown('<div class="quick-chip-header">💡 Suggested Questions:</div>', unsafe_allow_html=True)
         q_cols = st.columns(4)
         sample_questions = [
-            "Give me a detailed breakdown of each and every step in this pipeline.",
+            "Give me a detailed breakdown of each step in this pipeline.",
             "Why did you drop any columns?",
             "How were missing values imputed and encoded?",
             "What were the most important features driving predictions?",
@@ -654,6 +988,8 @@ with tab_chat:
             with col:
                 if st.button(sample_questions[i], key=f"quick_q_{i}", use_container_width=True):
                     selected_prompt = sample_questions[i]
+
+        st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
         # Display Chat History
         for msg in st.session_state["chat_history"]:
