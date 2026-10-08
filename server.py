@@ -74,7 +74,7 @@ _raw_origins = os.getenv(
 
     "ALLOWED_ORIGINS",
 
-    "http\://localhost:5173,http\://127.0.0.1:5173,http\://localhost:8501,http\://localhost:3000",
+    "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8501,http://localhost:3000",
 
 )
 
@@ -416,67 +416,56 @@ async def upload_dataset(file: UploadFile = File(...)):
 
 
 
+@app.get("/api/automl/models")
+def get_supported_models():
+    """
+    Return candidate estimators available for classification and regression tasks.
+    """
+    return {
+        "success": True,
+        "models": TransparentAutoML.get_supported_models(),
+    }
+
+
 @app.post("/api/automl/run")
-
 def run_automl_pipeline(payload: Dict[str, Any] = Body(...)):
-
     """
-
     Execute Transparent AutoML pipeline and auto-initialize RAG Assistant.
-
     """
-
     if WORKSPACE_STATE["df"] is None:
-
         raise HTTPException(status_code=400, detail="No dataset loaded. Please upload or load sample data first.")
 
-
-
     target_col = payload.get("target_col")
-
     if not target_col or target_col not in WORKSPACE_STATE["df"].columns:
-
         raise HTTPException(status_code=400, detail=f"Target column '{target_col}' not found in dataset.")
 
-
+    task_type = payload.get("task_type", "auto")
+    model_name = payload.get("model_name", "auto")
 
     missing_thresh = float(payload.get("missing_threshold", 0.60))
-
     cardinality_thresh = int(payload.get("cardinality_threshold", 10))
-
     test_size = float(payload.get("test_size", 0.20))
-
     provider = payload.get("provider", "gemini")
-
     # API key is ALWAYS read server-side from environment — never trusted from the client payload
-
     gemini_api_key = os.getenv("GOOGLE_API_KEY", "")
-
     gemini_model = payload.get("gemini_model", "gemini-3.6-flash")
-
-    ollama_url = payload.get("ollama_base_url", "http\://localhost:11434")
-
+    ollama_url = payload.get("ollama_base_url", "http://localhost:11434")
     ollama_model = payload.get("ollama_model", "qwen2.5:7b")
 
-
-
     try:
-
         df = WORKSPACE_STATE["df"]
-
         engine = TransparentAutoML(
-
             missing_threshold=missing_thresh,
-
             cardinality_threshold=cardinality_thresh,
-
             test_size=test_size,
-
             random_state=42,
-
         )
-
-        engine.fit(df, target_col=target_col)
+        engine.fit(
+            df,
+            target_col=target_col,
+            task_type=task_type,
+            model_name=model_name,
+        )
 
 
 
@@ -638,7 +627,7 @@ def check_ollama(payload: Dict[str, Any] = Body(...)):
 
     """Check connectivity to local Ollama server and target model."""
 
-    url = payload.get("url", "http\://localhost:11434")
+    url = payload.get("url", "http://localhost:11434")
 
     model = payload.get("model", "qwen2.5:7b")
 
@@ -682,7 +671,7 @@ def chat_stream(payload: Dict[str, Any] = Body(...)):
 
     gemini_model = payload.get("gemini_model", "gemini-3.6-flash")
 
-    ollama_url = payload.get("ollama_base_url", "http\://localhost:11434")
+    ollama_url = payload.get("ollama_base_url", "http://localhost:11434")
 
     ollama_model = payload.get("ollama_model", "qwen2.5:7b")
 

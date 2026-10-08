@@ -12,6 +12,8 @@ export default function App() {
   // Dataset State
   const [dataset, setDataset] = useState(null);
   const [targetCol, setTargetCol] = useState('');
+  const [taskType, setTaskType] = useState('auto');
+  const [selectedModel, setSelectedModel] = useState('auto');
 
   // Heuristic Thresholds
   const [heuristics, setHeuristics] = useState({
@@ -145,6 +147,8 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           target_col: targetCol,
+          task_type: taskType,
+          model_name: selectedModel,
           missing_threshold: heuristics.missingThreshold,
           cardinality_threshold: heuristics.cardinalityThreshold,
           test_size: heuristics.testSize,
@@ -306,6 +310,10 @@ export default function App() {
             setHeuristics={setHeuristics}
             targetCol={targetCol}
             setTargetCol={setTargetCol}
+            taskType={taskType}
+            setTaskType={setTaskType}
+            selectedModel={selectedModel}
+            setSelectedModel={setSelectedModel}
             onRunAutoML={handleRunAutoML}
             isRunningAutoML={isRunningAutoML}
             loadingStep={loadingStep}

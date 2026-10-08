@@ -54,18 +54,18 @@ from sklearn.metrics import (
 
 )
 
-from sklearn.linear_model import LogisticRegression, Ridge
-
+from sklearn.linear_model import LogisticRegression, Ridge, Lasso
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.ensemble import (
-
     RandomForestClassifier,
-
     RandomForestRegressor,
-
     GradientBoostingClassifier,
-
     GradientBoostingRegressor,
-
+    ExtraTreesClassifier,
+    ExtraTreesRegressor,
+    AdaBoostClassifier,
+    AdaBoostRegressor,
 )
 
 
@@ -139,79 +139,78 @@ class TransparentAutoML:
         # State attributes
 
         self.target_col: Optional[str] = None
-
         self.task_type: Optional[str] = None  # "classification" or "regression"
-
+        self.task_selection_mode: str = "auto"  # "auto" or "manual"
+        self.selected_model_name: str = "auto"  # "auto" or specific model name
         self.raw_shape: Tuple[int, int] = (0, 0)
-
         self.dropped_columns: Dict[str, str] = {}
-
         self.column_profiles: List[Dict[str, Any]] = []
-
         self.cleaning_logs: List[str] = []
-
         self.encoding_logs: List[Dict[str, Any]] = []
-
         self.model_logs: List[Dict[str, Any]] = []
-
         self.leaderboard: Optional[pd.DataFrame] = None
-
         self.best_model_name: Optional[str] = None
-
         self.best_pipeline: Optional[Pipeline] = None
-
         self.feature_importances: Optional[pd.DataFrame] = None
-
         self.evaluation_metrics: Dict[str, Any] = {}
         self.target_distribution: List[Dict[str, Any]] = []
         self.confusion_matrix: Optional[Dict[str, Any]] = None
-
         self.full_execution_log: str = ""
-
         self.feature_names_in_: List[str] = []
-
         self.transformed_feature_names_: List[str] = []
-
         self.split_info: Dict[str, Any] = {}
 
-
+    @classmethod
+    def get_supported_models(cls) -> Dict[str, List[str]]:
+        """Return the dictionary of supported models by task type."""
+        return {
+            "classification": [
+                "Logistic Regression",
+                "Random Forest Classifier",
+                "Gradient Boosting Classifier",
+                "Extra Trees Classifier",
+                "AdaBoost Classifier",
+                "Decision Tree Classifier",
+                "K-Nearest Neighbors Classifier",
+            ],
+            "regression": [
+                "Ridge Regression",
+                "Lasso Regression",
+                "Random Forest Regressor",
+                "Gradient Boosting Regressor",
+                "Extra Trees Regressor",
+                "AdaBoost Regressor",
+                "Decision Tree Regressor",
+                "K-Nearest Neighbors Regressor",
+            ],
+        }
 
     def _determine_task_type(self, y: pd.Series) -> str:
-
         """
-
         Heuristically determine if the task is classification or regression.
-
         """
-
         if pd.api.types.is_numeric_dtype(y):
-
             unique_count = y.nunique(dropna=True)
-
             total_count = len(y.dropna())
-
             unique_ratio = unique_count / max(total_count, 1)
 
-
-
             # If numeric with few distinct values, treat as discrete classification
-
             if unique_count <= 20 and unique_ratio < 0.10:
-
                 return "classification"
-
             return "regression"
-
         return "classification"
 
-
-
-    def fit(self, df: pd.DataFrame, target_col: str) -> "TransparentAutoML":
-
+    def fit(
+        self,
+        df: pd.DataFrame,
+        target_col: str,
+        task_type: str = "auto",
+        model_name: str = "auto",
+    ) -> "TransparentAutoML":
         """
-
         Execute the transparent AutoML pipeline on the provided dataset with verbose tracking.
-
+        Supports automatic task detection or explicit classification/regression, plus
+        benchmarking all candidate models or isolating a specific selected model.
         """
 
         if target_col not in df.columns:
@@ -306,7 +305,34 @@ class TransparentAutoML:
 
 
 
-        self.task_type = self._determine_task_type(y)
+        task_choice = (task_type or "auto").strip().lower()
+        if task_choice not in ("auto", "classification", "regression"):
+            raise ValueError(f"Invalid task_type '{task_type}'. Must be 'auto', 'classification', or 'regression'.")
+
+        if task_choice == "regression":
+            if not pd.api.types.is_numeric_dtype(y):
+                try:
+                    pd.to_numeric(y.dropna())
+                except Exception:
+                    raise ValueError(
+                        f"Target column '{target_col}' contains non-numeric values and cannot be used for regression. "
+                        f"Please select 'classification' or choose a numeric target column."
+                    )
+            y = pd.to_numeric(y, errors="coerce")
+            df_clean[target_col] = y
+            df_clean = df_clean.dropna(subset=[target_col])
+            y = df_clean[target_col]
+            X = df_clean.drop(columns=[target_col])
+            self.task_type = "regression"
+            self.task_selection_mode = "manual"
+        elif task_choice == "classification":
+            self.task_type = "classification"
+            self.task_selection_mode = "manual"
+        else:
+            self.task_type = self._determine_task_type(y)
+            self.task_selection_mode = "auto"
+
+        self.selected_model_name = (model_name or "auto").strip()
 
         # Build structured target-distribution data for the frontend.
         # Classification returns one row per class; regression returns a
@@ -642,64 +668,81 @@ class TransparentAutoML:
         # ---------------------------------------------------------
 
         if self.task_type == "classification":
-
             candidate_models = {
-
                 "Logistic Regression": {
-
                     "model": LogisticRegression(max_iter=1000, random_state=self.random_state),
-
                     "description": "Linear baseline using L2 regularization (C=1.0) and cross-entropy loss.",
-
                 },
-
                 "Random Forest Classifier": {
-
                     "model": RandomForestClassifier(n_estimators=100, max_depth=10, random_state=self.random_state),
-
                     "description": "Ensemble of 100 bootstrapped decision trees with Gini impurity splitting.",
-
                 },
-
                 "Gradient Boosting Classifier": {
-
                     "model": GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, random_state=self.random_state),
-
                     "description": "Sequential boosted ensemble minimizing deviance loss with shrinkage.",
-
                 },
-
+                "Extra Trees Classifier": {
+                    "model": ExtraTreesClassifier(n_estimators=100, max_depth=10, random_state=self.random_state),
+                    "description": "Ensemble of 100 extremely randomized trees with random split cutoffs for variance reduction.",
+                },
+                "AdaBoost Classifier": {
+                    "model": AdaBoostClassifier(n_estimators=100, random_state=self.random_state),
+                    "description": "Iterative ensemble adaptively boosting weights of misclassified observations.",
+                },
+                "Decision Tree Classifier": {
+                    "model": DecisionTreeClassifier(max_depth=10, random_state=self.random_state),
+                    "description": "Single decision tree offering clear transparent decision rules and boundaries.",
+                },
+                "K-Nearest Neighbors Classifier": {
+                    "model": KNeighborsClassifier(n_neighbors=5),
+                    "description": "Instance-based non-parametric classifier using Euclidean distance voting among 5 neighbors.",
+                },
             }
-
         else:
-
             candidate_models = {
-
                 "Ridge Regression": {
-
                     "model": Ridge(alpha=1.0, random_state=self.random_state),
-
                     "description": "Linear regression with L2 Tikhonov regularization.",
-
                 },
-
+                "Lasso Regression": {
+                    "model": Lasso(alpha=1.0, random_state=self.random_state),
+                    "description": "Linear regression with L1 regularization producing sparse feature selection.",
+                },
                 "Random Forest Regressor": {
-
                     "model": RandomForestRegressor(n_estimators=100, max_depth=10, random_state=self.random_state),
-
                     "description": "Non-linear ensemble of 100 regression trees with MSE criterion.",
-
                 },
-
                 "Gradient Boosting Regressor": {
-
                     "model": GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, random_state=self.random_state),
-
                     "description": "Gradient boosted regression trees with Friedman MSE criterion.",
-
                 },
-
+                "Extra Trees Regressor": {
+                    "model": ExtraTreesRegressor(n_estimators=100, max_depth=10, random_state=self.random_state),
+                    "description": "Extremely randomized regression trees reducing variance on holdout predictions.",
+                },
+                "AdaBoost Regressor": {
+                    "model": AdaBoostRegressor(n_estimators=100, random_state=self.random_state),
+                    "description": "Ensemble boosting sequentially minimizing residual regression error.",
+                },
+                "Decision Tree Regressor": {
+                    "model": DecisionTreeRegressor(max_depth=10, random_state=self.random_state),
+                    "description": "Single interpretable regression tree with partitioned threshold leaves.",
+                },
+                "K-Nearest Neighbors Regressor": {
+                    "model": KNeighborsRegressor(n_neighbors=5),
+                    "description": "Instance-based regression averaging targets of 5 nearest neighbor instances.",
+                },
             }
+
+        if self.selected_model_name != "auto":
+            matched = {k: v for k, v in candidate_models.items() if k.lower() == self.selected_model_name.lower()}
+            if not matched:
+                available = ", ".join(candidate_models.keys())
+                raise ValueError(
+                    f"Selected model '{self.selected_model_name}' is not recognized for {self.task_type}. "
+                    f"Available models: {available}"
+                )
+            candidate_models = matched
 
 
 
@@ -1164,7 +1207,10 @@ class TransparentAutoML:
 
         lines.append("## [Step 6: Candidate Model Exploration & Benchmark Results]")
 
-        lines.append(f"Trained and evaluated {len(self.model_logs)} candidate machine learning algorithms under identical preprocessed splits:")
+        if getattr(self, "selected_model_name", "auto") != "auto":
+            lines.append(f"User specifically designated `{self.best_model_name}` as the isolated estimator for this pipeline execution:")
+        else:
+            lines.append(f"Trained and evaluated {len(self.model_logs)} candidate machine learning algorithms under identical preprocessed splits:")
 
         for m_log in self.model_logs:
 
@@ -1204,7 +1250,12 @@ class TransparentAutoML:
 
         lines.append(f"- **Selected Champion Model**: **{self.best_model_name}**")
 
-        if self.task_type == "classification":
+        if getattr(self, "selected_model_name", "auto") != "auto":
+            lines.append(
+                f"- **Selection Justification**: User explicitly selected **{self.best_model_name}** to train and evaluate. "
+                f"Holdout validation metrics and downstream diagnostics were produced exclusively for this estimator."
+            )
+        elif self.task_type == "classification":
 
             lines.append(
 

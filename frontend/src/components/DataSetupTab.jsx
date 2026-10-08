@@ -17,6 +17,27 @@ import {
 } from 'lucide-react';
 import MetricCard from './MetricCard';
 
+const CLASSIFICATION_MODELS = [
+  'Logistic Regression',
+  'Random Forest Classifier',
+  'Gradient Boosting Classifier',
+  'Extra Trees Classifier',
+  'AdaBoost Classifier',
+  'Decision Tree Classifier',
+  'K-Nearest Neighbors Classifier',
+];
+
+const REGRESSION_MODELS = [
+  'Ridge Regression',
+  'Lasso Regression',
+  'Random Forest Regressor',
+  'Gradient Boosting Regressor',
+  'Extra Trees Regressor',
+  'AdaBoost Regressor',
+  'Decision Tree Regressor',
+  'K-Nearest Neighbors Regressor',
+];
+
 export default function DataSetupTab({
   dataset,
   onLoadSample,
@@ -25,6 +46,10 @@ export default function DataSetupTab({
   setHeuristics,
   targetCol,
   setTargetCol,
+  taskType = 'auto',
+  setTaskType,
+  selectedModel = 'auto',
+  setSelectedModel,
   onRunAutoML,
   isRunningAutoML,
   loadingStep,
@@ -434,42 +459,166 @@ export default function DataSetupTab({
               </div>
             </div>
 
-            {/* Target Column Selection & Run Button */}
-            <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-t border-white/[0.06] pt-6">
-              <div className="w-full sm:w-72">
-                <label className="text-xs font-semibold text-slate-300">
-                  Select Target Variable to Predict
-                </label>
-                <select
-                  value={targetCol}
-                  onChange={(e) => setTargetCol(e.target.value)}
-                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#0c1222] py-2.5 px-3 text-xs font-bold text-white focus:border-brand-500 focus:outline-none"
-                >
-                  {dataset.columns.map((col) => (
-                    <option key={col} value={col}>
-                      {col}
-                    </option>
-                  ))}
-                </select>
+            {/* Target Variable, Task Formulation & Model Selection */}
+            <div className="mt-8 border-t border-white/[0.08] pt-6">
+              <div className="mb-4">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-brand-400" />
+                  Target Variable & Estimator Architecture
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Choose your prediction target, select problem formulation, and either benchmark all candidate models or isolate a specific algorithm.
+                </p>
               </div>
 
-              <button
-                disabled={isRunningAutoML}
-                onClick={onRunAutoML}
-                className="flex items-center justify-center gap-2 rounded-xl bg-slate-800 py-3 px-8 text-sm font-extrabold text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-              >
-                {isRunningAutoML ? (
-                  <>
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    <span>{loadingStep || 'Executing Pipeline...'}</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="h-4 w-4 fill-white" />
-                    <span>Run Transparent AutoML</span>
-                  </>
-                )}
-              </button>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                {/* 1. Target Column Selection */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-300">
+                    Target Variable to Predict
+                  </label>
+                  <select
+                    value={targetCol}
+                    onChange={(e) => setTargetCol(e.target.value)}
+                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#0c1222] py-2.5 px-3 text-xs font-bold text-white focus:border-brand-500 focus:outline-none"
+                  >
+                    {dataset.columns.map((col) => (
+                      <option key={col} value={col}>
+                        {col}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-[0.72rem] text-slate-400">
+                    Ground-truth label column to be optimized by the pipeline.
+                  </p>
+                </div>
+
+                {/* 2. Task Formulation */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-300">
+                    Task Formulation
+                  </label>
+                  <select
+                    value={taskType}
+                    onChange={(e) => {
+                      setTaskType(e.target.value);
+                      setSelectedModel('auto');
+                    }}
+                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#0c1222] py-2.5 px-3 text-xs font-bold text-white focus:border-brand-500 focus:outline-none"
+                  >
+                    <option value="auto">⚡ Auto-Detect (Pipeline Decides)</option>
+                    <option value="classification">🎯 Classification (Discrete Classes)</option>
+                    <option value="regression">📈 Regression (Continuous Values)</option>
+                  </select>
+                  <p className="mt-1 text-[0.72rem] text-slate-400">
+                    {taskType === 'auto'
+                      ? 'Heuristics evaluate unique ratio & dtype.'
+                      : taskType === 'classification'
+                      ? 'Optimizes cross-entropy, Accuracy & F1.'
+                      : 'Optimizes continuous MSE, RMSE & R².'}
+                  </p>
+                </div>
+
+                {/* 3. Model Architecture Selection */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-300">
+                    Model Selection
+                  </label>
+                  <select
+                    value={selectedModel}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#0c1222] py-2.5 px-3 text-xs font-bold text-white focus:border-brand-500 focus:outline-none"
+                  >
+                    <option value="auto">
+                      🏆 Auto (Benchmark All & Pick Best)
+                    </option>
+
+                    {taskType === 'classification' && (
+                      <optgroup label="Classification Algorithms (7 Models)">
+                        {CLASSIFICATION_MODELS.map((m) => (
+                          <option key={m} value={m}>
+                            {m}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+
+                    {taskType === 'regression' && (
+                      <optgroup label="Regression Algorithms (8 Models)">
+                        {REGRESSION_MODELS.map((m) => (
+                          <option key={m} value={m}>
+                            {m}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+
+                    {taskType === 'auto' && (
+                      <>
+                        <optgroup label="Classification Algorithms">
+                          {CLASSIFICATION_MODELS.map((m) => (
+                            <option key={m} value={m}>
+                              {m}
+                            </option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="Regression Algorithms">
+                          {REGRESSION_MODELS.map((m) => (
+                            <option key={m} value={m}>
+                              {m}
+                            </option>
+                          ))}
+                        </optgroup>
+                      </>
+                    )}
+                  </select>
+                  <p className="mt-1 text-[0.72rem] text-slate-400">
+                    {selectedModel === 'auto'
+                      ? 'Full multi-model exploration & leaderboard ranking.'
+                      : `Trains solely ${selectedModel}.`}
+                  </p>
+                </div>
+              </div>
+
+              {/* Execution Action Bar */}
+              <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-white/[0.06] bg-[#0c1222]/80 p-4">
+                <div className="text-xs text-slate-300">
+                  <span className="font-semibold text-white">Execution Mode:</span>{' '}
+                  {selectedModel === 'auto' ? (
+                    <span className="inline-flex items-center gap-1.5 text-brand-300 font-medium">
+                      <span className="h-2 w-2 rounded-full bg-brand-400 animate-pulse" />
+                      Full Multi-Model Benchmark ({taskType === 'regression' ? '8 Regression' : taskType === 'classification' ? '7 Classification' : '7–8'} Candidates)
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-cyan-300 font-medium">
+                      <span className="h-2 w-2 rounded-full bg-cyan-400" />
+                      Targeted Single-Model Training ({selectedModel})
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  disabled={isRunningAutoML}
+                  onClick={onRunAutoML}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:bg-slate-900 border border-brand-500/30 py-3 px-8 text-sm font-extrabold text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                >
+                  {isRunningAutoML ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      <span>{loadingStep || 'Executing Pipeline...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4 fill-white" />
+                      <span>
+                        {selectedModel === 'auto'
+                          ? 'Run Transparent AutoML'
+                          : `Train & Evaluate ${selectedModel}`}
+                      </span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </motion.div>
