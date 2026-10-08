@@ -73,7 +73,7 @@ export default function DataSetupTab({
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-br from-[#131b2e] via-[#0f172a] to-[#0a0e1a] p-6 sm:p-8 shadow-2xl backdrop-blur-xl"
+        className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-slate-800 p-6 sm:p-8 shadow-sm backdrop-blur-xl"
       >
         <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-brand-500/10 blur-3xl pointer-events-none" />
         <div className="absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
@@ -114,7 +114,7 @@ export default function DataSetupTab({
             className="absolute inset-0 cursor-pointer opacity-0"
             id="csv-file-input"
           />
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 mb-3 shadow-glow-brand">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 mb-3 shadow-sm">
             <Upload className="h-6 w-6" />
           </div>
           <div className="font-sans text-sm font-bold text-white">
@@ -141,7 +141,7 @@ export default function DataSetupTab({
 
           <button
             onClick={handleSampleClick}
-            className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-cyan-600 py-2.5 px-4 text-xs font-bold text-white shadow-glow-brand transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-slate-800 py-2.5 px-4 text-xs font-bold text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Sparkles className="h-4 w-4" /> Load Sample Dataset
           </button>
@@ -211,7 +211,7 @@ export default function DataSetupTab({
           </div>
 
           {/* Table Preview & Schema Viewer */}
-          <div className="rounded-2xl border border-white/[0.08] bg-[#101728]/80 p-5 backdrop-blur-md shadow-xl">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#101728]/80 p-5 backdrop-blur-md shadow-sm">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-white/[0.06] pb-4">
               <div className="flex items-center gap-2">
                 <button
@@ -291,9 +291,10 @@ export default function DataSetupTab({
                       <tr>
                         <th className="px-4 py-2.5">Column Name</th>
                         <th className="px-4 py-2.5">Data Type</th>
-                        <th className="px-4 py-2.5">Missing Count</th>
                         <th className="px-4 py-2.5">Missing %</th>
                         <th className="px-4 py-2.5">Unique Values</th>
+                        <th className="px-4 py-2.5">Min / Max</th>
+                        <th className="px-4 py-2.5">Mean / Top Value</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/[0.04] bg-[#0c1222]">
@@ -306,9 +307,6 @@ export default function DataSetupTab({
                             <span className="rounded-md border border-brand-500/20 bg-brand-500/10 px-2 py-0.5 font-mono text-[0.72rem] text-brand-300">
                               {item.dtype}
                             </span>
-                          </td>
-                          <td className="px-4 py-2 font-mono text-slate-400">
-                            {item.missing_count}
                           </td>
                           <td className="px-4 py-2 font-mono">
                             <span
@@ -324,6 +322,12 @@ export default function DataSetupTab({
                           <td className="px-4 py-2 font-mono text-slate-400">
                             {item.unique_values}
                           </td>
+                          <td className="px-4 py-2 font-mono text-slate-400 text-[0.72rem]">
+                            {item.min !== null ? `${item.min} / ${item.max}` : '-'}
+                          </td>
+                          <td className="px-4 py-2 font-mono text-slate-400 text-[0.72rem]">
+                            {item.mean !== null ? item.mean : (item.top_value ? `${item.top_value} (x${item.top_freq})` : '-')}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -334,7 +338,7 @@ export default function DataSetupTab({
           </div>
 
           {/* Heuristics & Execution Controls */}
-          <div className="rounded-2xl border border-white/[0.08] bg-[#101728]/80 p-6 backdrop-blur-md shadow-xl">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#101728]/80 p-6 backdrop-blur-md shadow-sm">
             <div className="flex items-center gap-2 border-b border-white/[0.06] pb-4 mb-5">
               <Sliders className="h-5 w-5 text-brand-400" />
               <div>
@@ -371,7 +375,7 @@ export default function DataSetupTab({
                   className="mt-2 w-full accent-brand-500"
                 />
                 <p className="mt-1 text-[0.72rem] text-slate-400">
-                  Columns with missing ratio above this threshold will be pruned.
+                  <strong className="text-white">What it does:</strong> Removes columns that have too much missing data. If set to 60%, any column missing more than 60% of its values is dropped.
                 </p>
               </div>
 
@@ -398,7 +402,7 @@ export default function DataSetupTab({
                   className="mt-2 w-full accent-cyan-500"
                 />
                 <p className="mt-1 text-[0.72rem] text-slate-400">
-                  Categories ≤ this threshold use One-Hot, else Ordinal encoding.
+                  <strong className="text-white">What it does:</strong> Categories below this limit use <em>One-Hot Encoding</em> (best for accuracy). Above this, they use <em>Ordinal Encoding</em> (saves memory).
                 </p>
               </div>
 
@@ -425,7 +429,7 @@ export default function DataSetupTab({
                   className="mt-2 w-full accent-emerald-500"
                 />
                 <p className="mt-1 text-[0.72rem] text-slate-400">
-                  Percentage of data reserved for holdout evaluation.
+                  <strong className="text-white">What it does:</strong> Reserves this percentage of your data to test the model at the very end to ensure it didn't just memorize the answers.
                 </p>
               </div>
             </div>
@@ -452,7 +456,7 @@ export default function DataSetupTab({
               <button
                 disabled={isRunningAutoML}
                 onClick={onRunAutoML}
-                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 via-indigo-600 to-cyan-600 py-3 px-8 text-sm font-extrabold text-white shadow-glow-brand transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                className="flex items-center justify-center gap-2 rounded-xl bg-slate-800 py-3 px-8 text-sm font-extrabold text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
               >
                 {isRunningAutoML ? (
                   <>

@@ -1,0 +1,52 @@
+# render.yaml
+# -----------
+# Render Blueprint — defines both backend (FastAPI) and frontend (React/Vite)
+# services so Render auto-configures everything from your Git repository.
+#
+# Deploy at: https://dashboard.render.com/select-repo
+# Choose "Blueprint" when prompted.
+
+services:
+
+  # ─── FastAPI Backend ─────────────────────────────────────────────────────────
+  - type: web
+    name: automl-backend
+    runtime: python
+    region: singapore          # Closest region to India. Change if needed.
+    plan: free                  # Upgrade to "starter" for persistent memory & faster boot.
+
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+
+    envVars:
+      # Set GOOGLE_API_KEY in Render dashboard → Environment → Secret Files
+      - key: GOOGLE_API_KEY
+        sync: false             # Render will prompt you to enter this secret in the dashboard
+
+      # Set this to your Render frontend URL after first deploy
+      # Example: https://automl-frontend.onrender.com
+      - key: ALLOWED_ORIGINS
+        sync: false
+
+    healthCheckPath: /api/health
+
+  # ─── React/Vite Frontend (Static Site) ───────────────────────────────────────
+  - type: web
+    name: automl-frontend
+    runtime: static
+    region: singapore
+
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+
+    envVars:
+      # Set this to the backend URL from the service above after first deploy
+      # Example: https://automl-backend.onrender.com
+      - key: VITE_API_URL
+        sync: false
+
+    routes:
+      # SPA fallback: all routes return index.html so React Router works
+      - type: rewrite
+        source: /*
+        destination: /index.html

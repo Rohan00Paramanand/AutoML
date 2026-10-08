@@ -22,7 +22,7 @@ export default function Header({
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
         {/* Brand Logo */}
         <div className="flex items-center gap-3">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-600 to-cyan-500 shadow-glow-brand">
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 shadow-sm">
             <Sparkles className="h-5 w-5 text-white" />
             <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500 ring-2 ring-[#0a0e1a]">
               <span className="h-2 w-2 rounded-full bg-white opacity-80 animate-pulse" />
@@ -59,7 +59,7 @@ export default function Header({
                 {isActive && (
                   <motion.div
                     layoutId="activeTabPill"
-                    className="absolute inset-0 rounded-lg bg-gradient-to-r from-brand-600 to-indigo-600 shadow-glow-brand"
+                    className="absolute inset-0 rounded-lg bg-slate-800 shadow-sm"
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}

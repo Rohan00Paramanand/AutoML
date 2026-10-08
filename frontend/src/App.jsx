@@ -3,6 +3,8 @@ import Header from './components/Header';
 import DataSetupTab from './components/DataSetupTab';
 import ResultsTab from './components/ResultsTab';
 import ChatTab from './components/ChatTab';
+import { apiFetch } from './api';
+
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('data');
@@ -49,7 +51,7 @@ export default function App() {
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        const res = await fetch('/api/health');
+        const res = await apiFetch('/api/health');
         setIsBackendOnline(res.ok);
       } catch {
         setIsBackendOnline(false);
@@ -63,7 +65,7 @@ export default function App() {
   // Load Sample Dataset Handler
   const handleLoadSample = async () => {
     try {
-      const res = await fetch('/api/dataset/sample', { method: 'POST' });
+      const res = await apiFetch('/api/dataset/sample', { method: 'POST' });
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
         throw new Error(errJson.detail || `Server returned status ${res.status}`);
@@ -87,7 +89,7 @@ export default function App() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch('/api/dataset/upload', {
+      const res = await apiFetch('/api/dataset/upload', {
         method: 'POST',
         body: formData,
       });
@@ -112,7 +114,7 @@ export default function App() {
   // Check Ollama Server
   const handleCheckOllama = async () => {
     try {
-      const res = await fetch('/api/ollama/check', {
+      const res = await apiFetch('/api/ollama/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -138,7 +140,7 @@ export default function App() {
       setTimeout(() => setLoadingStep('Benchmarking Candidate Estimators...'), 2000);
       setTimeout(() => setLoadingStep('Indexing Chronicle into ChromaDB...'), 3500);
 
-      const res = await fetch('/api/automl/run', {
+      const res = await apiFetch('/api/automl/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -177,7 +179,7 @@ export default function App() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch('/api/automl/predict', {
+      const res = await apiFetch('/api/automl/predict', {
         method: 'POST',
         body: formData,
       });
@@ -204,7 +206,7 @@ export default function App() {
     setCurrentStreamingText('');
 
     try {
-      const res = await fetch('/api/chat/stream', {
+      const res = await apiFetch('/api/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -313,6 +315,7 @@ export default function App() {
         {activeTab === 'results' && (
           <ResultsTab
             results={automlResults}
+            dataset={dataset}
             onRunPredictions={handleRunPredictions}
             isScoring={isScoring}
             predictionResult={predictionResult}
@@ -334,3 +337,4 @@ export default function App() {
     </div>
   );
 }
+

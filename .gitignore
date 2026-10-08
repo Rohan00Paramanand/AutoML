@@ -1,18 +1,55 @@
-# Environment Variables
+# ─── Secrets & Environment ────────────────────────────────────────────────────
 .env
 .env.local
+.env.*.local
 
-# Python Cache & Artifacts
+# ─── Python ───────────────────────────────────────────────────────────────────
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
+*.pdb
+*.egg-info/
+dist/
+build/
+*.egg
 
-# Chroma Vector Store Cache
-chroma_db/
-*.parquet
-
-# Virtual Environments
+# ─── Virtual Environments ─────────────────────────────────────────────────────
 .venv/
 venv/
 ENV/
+env/
+
+# ─── Data & Model Artifacts ───────────────────────────────────────────────────
+chroma_db/
+chromadb/
+*.parquet
+*.pkl
+*.joblib
+*.h5
+*.onnx
+models/
+mlruns/
+logs/
+exports/
+
+# ─── Frontend Build ───────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.env
+frontend/.env.local
+
+# ─── OS & Editor ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.sw?
+
+# ─── Test Artifacts ───────────────────────────────────────────────────────────
+.pytest_cache/
+htmlcov/
+.coverage
+*.xml

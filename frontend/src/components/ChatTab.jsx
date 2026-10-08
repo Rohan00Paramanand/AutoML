@@ -147,11 +147,11 @@ export default function ChatTab({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] min-h-[580px] rounded-2xl border border-white/[0.08] bg-[#0c1222] shadow-2xl backdrop-blur-2xl overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-140px)] min-h-[580px] rounded-2xl border border-white/[0.08] bg-[#0c1222] shadow-sm backdrop-blur-2xl overflow-hidden">
       {/* Top Chat Bar */}
       <div className="flex items-center justify-between border-b border-white/[0.08] bg-[#111827]/80 px-6 py-3.5">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 shadow-glow-brand">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-800 shadow-sm">
             <Sparkles className="h-4 w-4 text-white" />
           </div>
           <div>
@@ -196,7 +196,7 @@ export default function ChatTab({
       <div className="flex-1 overflow-y-auto p-6 space-y-5">
         {chatHistory.length === 0 && !isStreaming && (
           <div className="flex flex-col items-center justify-center h-full text-center py-12">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-400 border border-brand-500/20 mb-3.5 shadow-glow-brand">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-400 border border-brand-500/20 mb-3.5 shadow-sm">
               <Bot className="h-7 w-7" />
             </div>
             <h4 className="font-sans text-base font-bold text-white">
@@ -217,7 +217,7 @@ export default function ChatTab({
             className={`flex gap-3.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {msg.role === 'assistant' && (
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 shadow-glow-brand text-white mt-1">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-800 shadow-sm text-white mt-1">
                 <Bot className="h-5 w-5" />
               </div>
             )}
@@ -225,8 +225,8 @@ export default function ChatTab({
             <div
               className={`max-w-3xl rounded-2xl p-5 ${
                 msg.role === 'user'
-                  ? 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white rounded-br-none shadow-glow-brand text-sm leading-relaxed'
-                  : 'border border-white/[0.08] bg-[#111827]/95 text-slate-200 rounded-bl-none shadow-xl backdrop-blur-md'
+                  ? 'bg-slate-800 text-white rounded-br-none shadow-sm text-sm leading-relaxed'
+                  : 'border border-white/[0.08] bg-[#111827]/95 text-slate-200 rounded-bl-none shadow-sm backdrop-blur-md'
               }`}
             >
               {msg.role === 'user' ? (
@@ -296,10 +296,10 @@ export default function ChatTab({
             animate={{ opacity: 1, y: 0 }}
             className="flex gap-3.5 justify-start"
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 shadow-glow-brand text-white mt-1">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-800 shadow-sm text-white mt-1">
               <Bot className="h-5 w-5 animate-pulse" />
             </div>
-            <div className="max-w-3xl rounded-2xl rounded-bl-none border border-brand-500/30 bg-[#111827]/95 p-5 text-slate-200 shadow-glow-brand">
+            <div className="max-w-3xl rounded-2xl rounded-bl-none border border-brand-500/30 bg-[#111827]/95 p-5 text-slate-200 shadow-sm">
               <ReactMarkdown components={markdownComponents}>
                 {currentStreamingText || 'Analyzing execution decisions...'}
               </ReactMarkdown>
@@ -325,7 +325,7 @@ export default function ChatTab({
           <button
             type="submit"
             disabled={!inputMessage.trim() || isStreaming}
-            className="absolute right-2.5 flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-glow-brand transition-all hover:scale-105 active:scale-95 disabled:opacity-40"
+            className="absolute right-2.5 flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-white shadow-sm transition-all hover:scale-105 active:scale-95 disabled:opacity-40"
           >
             <Send className="h-4 w-4" />
           </button>
